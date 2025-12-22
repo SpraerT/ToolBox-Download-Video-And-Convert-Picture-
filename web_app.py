@@ -24,7 +24,11 @@ with st.sidebar:
     st.title("🧰 MENÜ")
     secim = st.radio("Araç Seç:", ["YouTube İndirici", "Resim Dönüştürücü"])
     st.markdown("---")
-    st.caption("v24.0 Debug Edition")
+    
+    st.warning("🍪 **YouTube Engeli Aşma**")
+    st.caption("YouTube sunucuyu engellerse, 'cookies.txt' dosyanı buraya yükle.")
+    cookie_file = st.file_uploader("cookies.txt Yükle", type=["txt"])
+
     if st.button("⚠️ KIRMIZI BUTON", type="primary"):
         rick_roll_yap()
 
@@ -50,16 +54,30 @@ if secim == "YouTube İndirici":
                     try: os.remove(os.path.join(DOWNLOAD_DIR, f))
                     except: pass
 
-                with st.status("İşleniyor... (Lütfen bekleyin)", expanded=True) as status:
-                    st.write("🔍 Video bilgileri alınıyor...")
+                # Cookies dosyasını kaydet (Eğer yüklendiyse)
+                cookie_path = None
+                if cookie_file:
+                    cookie_path = "cookies.txt"
+                    with open(cookie_path, "wb") as f:
+                        f.write(cookie_file.getbuffer())
+
+                with st.status("İşleniyor... (YouTube Engeli Kontrol Ediliyor)", expanded=True) as status:
                     
                     ydl_opts = {
                         'outtmpl': f'{DOWNLOAD_DIR}/%(title)s.%(ext)s',
                         'quiet': True,
                         'no_warnings': True,
-                        'restrictfilenames': True, # Türkçe karakter sorununu çözer
+                        'restrictfilenames': True,
+                        'nocheckcertificate': True,
                     }
-                    
+
+                    # Eğer kullanıcı cookies yüklediyse onu kullan (403 Çözümü)
+                    if cookie_path:
+                        st.write("🍪 Cookies dosyası kullanılıyor (Anti-Ban Aktif)...")
+                        ydl_opts['cookiefile'] = cookie_path
+                    else:
+                        st.warning("⚠️ Cookies yok! YouTube engellerse sol menüden yükle.")
+
                     if fmt.startswith("MP3"):
                         st.write("🎵 Sese dönüştürülüyor (FFmpeg)...")
                         ydl_opts.update({
@@ -94,9 +112,14 @@ if secim == "YouTube İndirici":
             except Exception as e:
                 st.error("❌ BİR HATA OLUŞTU!")
                 st.code(f"Hata Detayı: {e}")
-                st.warning("Eğer hata 'ffprobe' veya 'ffmpeg' içeriyorsa, sistemde FFmpeg yüklü değildir.")
-                if os.name == 'posix': # Linux/Mac uyarısı
-                    st.info("Çözüm: Terminale 'sudo apt install ffmpeg' yaz.")
+                
+                hata_mesaji = str(e)
+                if "403" in hata_mesaji or "Forbidden" in hata_mesaji:
+                    st.error("🚨 YOUTUBE SUNUCUYU ENGELLEDİ!")
+                    st.info("ÇÖZÜM: Sol menüdeki 'cookies.txt Yükle' kısmına, bilgisayarından alacağın cookies.txt dosyasını yükle.")
+                elif "ffmpeg" in hata_mesaji or "ffprobe" in hata_mesaji:
+                    st.error("🚨 FFmpeg EKSİK!")
+                    st.info("GitHub'a 'packages.txt' dosyasını yüklediğinden emin ol.")
 
 # ==========================================
 # 2. RESİM DÖNÜŞTÜRÜCÜ
