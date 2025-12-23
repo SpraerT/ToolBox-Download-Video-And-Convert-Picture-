@@ -24,19 +24,17 @@ with st.sidebar:
     st.title("🧰 MENÜ")
     secim = st.radio("Araç Seç:", ["YouTube İndirici", "Resim Dönüştürücü"])
     st.markdown("---")
+    st.caption("v26.0 Fully Automatic")
     
-    st.warning("🍪 **YouTube Engeli Aşma**")
-    st.caption("YouTube sunucuyu engellerse, 'cookies.txt' dosyanı buraya yükle.")
-    cookie_file = st.file_uploader("cookies.txt Yükle", type=["txt"])
-
     if st.button("⚠️ KIRMIZI BUTON", type="primary"):
         rick_roll_yap()
 
 # ==========================================
-# 1. YOUTUBE İNDİRİCİ
+# 1. YOUTUBE İNDİRİCİ (OTOMATİK COOKIE)
 # ==========================================
 if secim == "YouTube İndirici":
     st.title("🎬 YouTube İndirici")
+    st.caption("Linki yapıştır, gerisini sistem halleder.")
     
     url = st.text_input("Video Linki:")
     col1, col2 = st.columns(2)
@@ -54,14 +52,7 @@ if secim == "YouTube İndirici":
                     try: os.remove(os.path.join(DOWNLOAD_DIR, f))
                     except: pass
 
-                # Cookies dosyasını kaydet (Eğer yüklendiyse)
-                cookie_path = None
-                if cookie_file:
-                    cookie_path = "cookies.txt"
-                    with open(cookie_path, "wb") as f:
-                        f.write(cookie_file.getbuffer())
-
-                with st.status("İşleniyor... (YouTube Engeli Kontrol Ediliyor)", expanded=True) as status:
+                with st.status("İşleniyor...", expanded=True) as status:
                     
                     ydl_opts = {
                         'outtmpl': f'{DOWNLOAD_DIR}/%(title)s.%(ext)s',
@@ -71,21 +62,23 @@ if secim == "YouTube İndirici":
                         'nocheckcertificate': True,
                     }
 
-                    # Eğer kullanıcı cookies yüklediyse onu kullan (403 Çözümü)
-                    if cookie_path:
-                        st.write("🍪 Cookies dosyası kullanılıyor (Anti-Ban Aktif)...")
-                        ydl_opts['cookiefile'] = cookie_path
+                    # --- OTOMATİK COOKIE KONTROLÜ ---
+                    # Proje klasöründe 'youtube_cookies.txt' var mı diye bakar.
+                    # Varsa kullanır, yoksa kullanmaz.
+                    if os.path.exists("youtube_cookies.txt"):
+                        st.write("🍪 Otomatik kimlik doğrulama aktif (Anti-Ban).")
+                        ydl_opts['cookiefile'] = "youtube_cookies.txt"
                     else:
-                        st.warning("⚠️ Cookies yok! YouTube engellerse sol menüden yükle.")
+                        st.warning("⚠️ Sistem cookies dosyası bulamadı! İndirme başarısız olabilir.")
 
                     if fmt.startswith("MP3"):
-                        st.write("🎵 Sese dönüştürülüyor (FFmpeg)...")
+                        st.write("🎵 Sese dönüştürülüyor...")
                         ydl_opts.update({
                             'format': 'bestaudio/best',
                             'postprocessors': [{'key': 'FFmpegExtractAudio','preferredcodec': 'mp3'}]
                         })
                     else:
-                        st.write("🎥 Video birleştiriliyor...")
+                        st.write("🎥 Video hazırlanıyor...")
                         ydl_opts.update({'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best'})
 
                     # İndirme İşlemi
@@ -111,15 +104,15 @@ if secim == "YouTube İndirici":
 
             except Exception as e:
                 st.error("❌ BİR HATA OLUŞTU!")
-                st.code(f"Hata Detayı: {e}")
-                
                 hata_mesaji = str(e)
+                
                 if "403" in hata_mesaji or "Forbidden" in hata_mesaji:
-                    st.error("🚨 YOUTUBE SUNUCUYU ENGELLEDİ!")
-                    st.info("ÇÖZÜM: Sol menüdeki 'cookies.txt Yükle' kısmına, bilgisayarından alacağın cookies.txt dosyasını yükle.")
-                elif "ffmpeg" in hata_mesaji or "ffprobe" in hata_mesaji:
-                    st.error("🚨 FFmpeg EKSİK!")
-                    st.info("GitHub'a 'packages.txt' dosyasını yüklediğinden emin ol.")
+                    st.error("🚨 COOKIE SÜRESİ DOLMUŞ OLABİLİR!")
+                    st.info("Yöneticiye Not: GitHub'daki 'youtube_cookies.txt' dosyasını yenilemen gerekiyor.")
+                elif "ffmpeg" in hata_mesaji:
+                    st.error("🚨 Sunucuda FFmpeg yüklü değil.")
+                else:
+                    st.code(f"Hata: {e}")
 
 # ==========================================
 # 2. RESİM DÖNÜŞTÜRÜCÜ
