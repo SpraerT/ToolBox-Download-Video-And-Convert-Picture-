@@ -3,76 +3,99 @@ import yt_dlp
 import os
 import time
 from PIL import Image
-import shutil
 
 # --- SAYFA AYARLARI ---
-st.set_page_config(page_title="Ultimate Toolbox", page_icon="🧰", layout="centered")
+st.set_page_config(page_title="Ultimate Toolbox & Premium", page_icon="🎁", layout="centered")
 
 # --- İNDİRME KLASÖRÜ ---
 DOWNLOAD_DIR = "downloads"
 if not os.path.exists(DOWNLOAD_DIR):
     os.makedirs(DOWNLOAD_DIR)
 
-# --- RICK ROLL ---
-def rick_roll_yap():
-    st.error("⚠️ SİSTEM HACKLENDİ! KAÇIN!")
+# --- RICK ROLL FONKSİYONU (ÇEŞİTLİ TUZAKLAR) ---
+def rick_roll_yap(mesaj="⚠️ GÜVENLİK İHLALİ TESPİT EDİLDİ!"):
+    st.empty() # Ekranı temizlemeye çalış
+    st.error(mesaj)
     time.sleep(1)
+    st.markdown("### 🕺 RICK ASTLEY TARAFINDAN HACKLENDİNİZ!")
     st.video("https://www.youtube.com/watch?v=dQw4w9WgXcQ", autoplay=True)
+    st.balloons()
 
-# --- YAN MENÜ ---
+# --- YAN MENÜ (TUZAKLI) ---
 with st.sidebar:
     st.title("🧰 MENÜ")
-    secim = st.radio("Araç Seç:", ["YouTube İndirici", "Resim Dönüştürücü"])
-    st.markdown("---")
-    st.caption("v26.0 Fully Automatic")
     
-    if st.button("⚠️ KIRMIZI BUTON", type="primary"):
-        rick_roll_yap()
+    # TUZAK 1: GİZLİ FORMAT SEÇENEĞİ
+    secim = st.radio("Araç Seç:", ["YouTube İndirici", "Resim Dönüştürücü", "Bitcoin Madencisi (BETA)"])
+    
+    st.markdown("---")
+    
+    # TUZAK 2: BEDAVA PREMIUM BUTONU
+    st.image("https://upload.wikimedia.org/wikipedia/commons/e/e1/Logo_of_YouTube_%282015-2017%29.svg", width=100)
+    if st.button("🔥 BEDAVA PREMIUM ÜYELİK AL", type="primary"):
+        rick_roll_yap("TEBRİKLER! ÖMÜR BOYU RICK ROLL KAZANDINIZ!")
+
+    st.markdown("---")
+    
+    # TUZAK 3: VİRÜS TARAMASI
+    if st.button("🛡️ Virüs Taraması Yap"):
+        with st.status("Taranıyor...", expanded=True) as s:
+            time.sleep(1)
+            st.write("C:/ taranıyor...")
+            time.sleep(1)
+            st.error("🚨 1 ADET RICK ASTLEY BULUNDU!")
+            s.update(label="HATA!", state="error")
+        rick_roll_yap("SİSTEM RICK ASTLEY TARAFINDAN ELE GEÇİRİLDİ!")
 
 # ==========================================
-# 1. YOUTUBE İNDİRİCİ (OTOMATİK COOKIE)
+# 1. YOUTUBE İNDİRİCİ (TUZAKLI)
 # ==========================================
 if secim == "YouTube İndirici":
     st.title("🎬 YouTube İndirici")
-    st.caption("Linki yapıştır, gerisini sistem halleder.")
+    st.caption("Linki yapıştır, arkanı yaslan.")
     
     url = st.text_input("Video Linki:")
+    
+    # TUZAK 4: 8K ULTRA HD SEÇENEĞİ
     col1, col2 = st.columns(2)
-    with col1: fmt = st.radio("Biçim:", ("MP4 (Video)", "MP3 (Ses)"))
+    with col1: 
+        fmt = st.radio("Kalite Seç:", ("Standart (MP4)", "Sadece Ses (MP3)", "✨ 8K ULTRA HD (Hızlı)"))
 
     if st.button("İndir 🚀", use_container_width=True):
+        # TUZAK 5: BOŞ LİNK KONTROLÜ
         if not url:
-            st.warning("Link girmeyi unuttun!")
-        elif "dQw4w9WgXcQ" in url:
-            rick_roll_yap()
+            rick_roll_yap("LİNK GİRMEDEN İNDİREMEZSİN ZEKİ ŞEY!")
+        
+        # TUZAK 6: YASAKLI KELİMELER
+        elif any(x in url.lower() for x in ["rick", "hack", "gizli", "secret", "admin"]):
+            rick_roll_yap("GİZLİ KODU BULDUN! ÖDÜLÜN BU VİDEO:")
+        
+        # TUZAK 4 TETİKLEME (8K SEÇİLİRSE)
+        elif "8K" in fmt:
+            rick_roll_yap("8K İÇİN EKRAN KARTIN YETMEZ AMA BU YETER!")
+            
         else:
+            # --- GERÇEK İNDİRME KISMI (Burada şaka yok) ---
             try:
-                # Klasörü temizle
+                # Klasör temizle
                 for f in os.listdir(DOWNLOAD_DIR):
                     try: os.remove(os.path.join(DOWNLOAD_DIR, f))
                     except: pass
 
                 with st.status("İşleniyor...", expanded=True) as status:
-                    
                     ydl_opts = {
-                        'outtmpl': f'{DOWNLOAD_DIR}/%(title)s.%(ext)s',
+                        'outtmpl': f'{DOWNLOAD_DIR}/%(id)s.%(ext)s',
                         'quiet': True,
                         'no_warnings': True,
-                        'restrictfilenames': True,
                         'nocheckcertificate': True,
                     }
-
-                    # --- OTOMATİK COOKIE KONTROLÜ ---
-                    # Proje klasöründe 'youtube_cookies.txt' var mı diye bakar.
-                    # Varsa kullanır, yoksa kullanmaz.
+                    
+                    # Cookie Kontrolü
                     if os.path.exists("youtube_cookies.txt"):
-                        st.write("🍪 Otomatik kimlik doğrulama aktif (Anti-Ban).")
                         ydl_opts['cookiefile'] = "youtube_cookies.txt"
-                    else:
-                        st.warning("⚠️ Sistem cookies dosyası bulamadı! İndirme başarısız olabilir.")
 
-                    if fmt.startswith("MP3"):
-                        st.write("🎵 Sese dönüştürülüyor...")
+                    if "MP3" in fmt:
+                        st.write("🎵 Ses moduna geçiliyor...")
                         ydl_opts.update({
                             'format': 'bestaudio/best',
                             'postprocessors': [{'key': 'FFmpegExtractAudio','preferredcodec': 'mp3'}]
@@ -81,63 +104,83 @@ if secim == "YouTube İndirici":
                         st.write("🎥 Video hazırlanıyor...")
                         ydl_opts.update({'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best'})
 
-                    # İndirme İşlemi
                     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                        info = ydl.extract_info(url, download=True)
-                        dosya_adi = ydl.prepare_filename(info)
-                        if fmt.startswith("MP3"): 
-                            dosya_adi = os.path.splitext(dosya_adi)[0] + ".mp3"
+                        ydl.download([url])
                     
-                    status.update(label="✅ İşlem Başarılı!", state="complete", expanded=False)
+                    status.update(label="✅ Hazır!", state="complete", expanded=False)
 
-                # İNDİRME BUTONU
-                dosya_ismi = os.path.basename(dosya_adi)
-                with open(dosya_adi, "rb") as file:
-                    st.download_button(
-                        label=f"📥 {dosya_ismi} İNDİR",
-                        data=file,
-                        file_name=dosya_ismi,
-                        mime="audio/mpeg" if fmt.startswith("MP3") else "video/mp4",
-                        use_container_width=True
-                    )
-                st.balloons()
+                dosyalar = os.listdir(DOWNLOAD_DIR)
+                if len(dosyalar) > 0:
+                    bulunan_dosya = os.path.join(DOWNLOAD_DIR, dosyalar[0])
+                    with open(bulunan_dosya, "rb") as file:
+                        st.download_button(
+                            label="📥 İNDİRMEK İÇİN BAS",
+                            data=file,
+                            file_name=dosyalar[0],
+                            mime="application/octet-stream",
+                            use_container_width=True
+                        )
+                    st.success("Tebrikler, bu sefer Rick Roll yemedin!")
+                else:
+                    st.error("Dosya inemedi. Cookie süresi bitmiş olabilir.")
 
             except Exception as e:
-                st.error("❌ BİR HATA OLUŞTU!")
-                hata_mesaji = str(e)
-                
-                if "403" in hata_mesaji or "Forbidden" in hata_mesaji:
-                    st.error("🚨 COOKIE SÜRESİ DOLMUŞ OLABİLİR!")
-                    st.info("Yöneticiye Not: GitHub'daki 'youtube_cookies.txt' dosyasını yenilemen gerekiyor.")
-                elif "ffmpeg" in hata_mesaji:
-                    st.error("🚨 Sunucuda FFmpeg yüklü değil.")
-                else:
-                    st.code(f"Hata: {e}")
+                st.error("Hata oluştu!")
 
 # ==========================================
-# 2. RESİM DÖNÜŞTÜRÜCÜ
+# 2. BITCOIN MADENCİSİ (BÜYÜK TUZAK)
+# ==========================================
+elif secim == "Bitcoin Madencisi (BETA)":
+    st.title("💰 Bedava Bitcoin Kazıcı")
+    st.warning("Bu işlem işlemcinizi %100 kullanır!")
+    
+    if st.button("KAZIMAYA BAŞLA (START MINING)"):
+        progress_text = "Bitcoin aranıyor..."
+        my_bar = st.progress(0, text=progress_text)
+
+        for percent_complete in range(100):
+            time.sleep(0.05)
+            my_bar.progress(percent_complete + 1, text=f"Bloklar çözülüyor... %{percent_complete}")
+        
+        rick_roll_yap("BITCOIN YOK AMA RICK ASTLEY VAR!")
+
+# ==========================================
+# 3. RESİM DÖNÜŞTÜRÜCÜ
 # ==========================================
 elif secim == "Resim Dönüştürücü":
     st.title("🖼️ Resim Dönüştürücü")
-    up_file = st.file_uploader("Resim", type=['png', 'jpg', 'webp', 'bmp'])
+    up_file = st.file_uploader("Resim Yükle")
     
     if up_file:
         img = Image.open(up_file)
         st.image(img, width=200)
-        target = st.selectbox("Format", ["JPEG", "PNG", "PDF", "ICO"])
+        
+        # TUZAK 7: HEDEF FORMAT "GIF"
+        target = st.selectbox("Format", ["JPEG", "PNG", "PDF", "ICO", "GIF (Hareketli)"])
         
         if st.button("Dönüştür"):
-            try:
-                if target in ["JPEG", "PDF"] and img.mode == "RGBA":
-                    bg = Image.new("RGB", img.size, (255,255,255))
-                    bg.paste(img, mask=img.split()[3])
-                    img = bg
-                
-                path = os.path.join(DOWNLOAD_DIR, f"resim.{target.lower()}")
-                img.save(path, format=target)
-                
-                with open(path, "rb") as f:
-                    st.download_button("📥 İNDİR", f, file_name=f"resim.{target.lower()}")
-                st.success("Tamam!")
-            except Exception as e: st.error(f"Hata: {e}")
+            if "GIF" in target:
+                rick_roll_yap("HAREKETLİ GIF İSTEDİN, AL SANA HAREKET!")
+            else:
+                try:
+                    # Klasör temizle
+                    for f in os.listdir(DOWNLOAD_DIR):
+                        try: os.remove(os.path.join(DOWNLOAD_DIR, f))
+                        except: pass
+                    
+                    if target in ["JPEG", "PDF"] and img.mode == "RGBA":
+                        bg = Image.new("RGB", img.size, (255,255,255)); bg.paste(img, mask=img.split()[3]); img = bg
+                    
+                    path = os.path.join(DOWNLOAD_DIR, f"resim.{target.lower()}")
+                    img.save(path, format=target)
+                    
+                    with open(path, "rb") as f:
+                        st.download_button("📥 İNDİR", f, file_name=f"resim.{target.lower()}")
+                except: st.error("Hata")
+
+# --- ALT BİLGİ TUZAĞI ---
+with st.expander("ℹ️ İletişim & Yardım"):
+    st.write("Sorun mu yaşıyorsun? Destek ekibimize bağlan:")
+    if st.button("📞 Canlı Destek Bağlan"):
+        rick_roll_yap("MERHABA BEN DESTEK EKİBİNDEN RICK!")
 
