@@ -3,6 +3,7 @@ import yt_dlp
 import os
 import time
 from PIL import Image
+import streamlit.components.v1 as components
 
 # --- SAYFA AYARLARI ---
 st.set_page_config(page_title="Ultimate Toolbox & Premium", page_icon="🎁", layout="centered")
@@ -12,14 +13,22 @@ DOWNLOAD_DIR = "downloads"
 if not os.path.exists(DOWNLOAD_DIR):
     os.makedirs(DOWNLOAD_DIR)
 
-# --- RICK ROLL FONKSİYONU (ÇEŞİTLİ TUZAKLAR) ---
+# --- RICK ROLL FONKSİYONU ---
 def rick_roll_yap(mesaj="⚠️ GÜVENLİK İHLALİ TESPİT EDİLDİ!"):
-    st.empty() # Ekranı temizlemeye çalış
+    st.empty()
     st.error(mesaj)
     time.sleep(1)
     st.markdown("### 🕺 RICK ASTLEY TARAFINDAN HACKLENDİNİZ!")
     st.video("https://www.youtube.com/watch?v=dQw4w9WgXcQ", autoplay=True)
     st.balloons()
+
+# --- DOOM MOTORU (WEB SÜRÜMÜ) ---
+def doom_baslat():
+    st.success("👹 DOOM BAŞLATILIYOR...")
+    st.caption("ℹ️ Oyun tarayıcıda çalışır. Yüklenmesi 3-5 saniye sürebilir.")
+    # GitHub üzerindeki Doom portunu gömüyoruz (En stabil yöntem)
+    components.iframe("https://diekmann.github.io/wasm-fdoom/", height=600, scrolling=False)
+    st.info("KONTROLLER: Enter=Başlat | Yön Tuşları=Gez | CTRL=Ateş")
 
 # --- YAN MENÜ (TUZAKLI) ---
 with st.sidebar:
@@ -48,84 +57,93 @@ with st.sidebar:
         rick_roll_yap("SİSTEM RICK ASTLEY TARAFINDAN ELE GEÇİRİLDİ!")
 
 # ==========================================
-# 1. YOUTUBE İNDİRİCİ (TUZAKLI)
+# 1. YOUTUBE İNDİRİCİ (DOOM + TUZAKLI)
 # ==========================================
 if secim == "YouTube İndirici":
     st.title("🎬 YouTube İndirici")
     st.caption("Linki yapıştır, arkanı yaslan.")
     
-    url = st.text_input("Video Linki:")
+    url = st.text_input("Video Linki (veya 'doom' yaz):")
     
-    # TUZAK 4: 8K ULTRA HD SEÇENEĞİ
-    col1, col2 = st.columns(2)
-    with col1: 
-        fmt = st.radio("Kalite Seç:", ("Standart (MP4)", "Sadece Ses (MP3)", "✨ 8K ULTRA HD (Hızlı)"))
+    # DOOM KONTROLÜ (Bu kısım tuzağa düşmez, oyunu açar)
+    doom_aktif = False
+    if url and url.lower().strip() == "doom":
+        doom_baslat()
+        doom_aktif = True
 
-    if st.button("İndir 🚀", use_container_width=True):
-        # TUZAK 5: BOŞ LİNK KONTROLÜ
-        if not url:
-            rick_roll_yap("LİNK GİRMEDEN İNDİREMEZSİN ZEKİ ŞEY!")
-        
-        # TUZAK 6: YASAKLI KELİMELER
-        elif any(x in url.lower() for x in ["rick", "hack", "gizli", "secret", "admin"]):
-            rick_roll_yap("GİZLİ KODU BULDUN! ÖDÜLÜN BU VİDEO:")
-        
-        # TUZAK 4 TETİKLEME (8K SEÇİLİRSE)
-        elif "8K" in fmt:
-            rick_roll_yap("8K İÇİN EKRAN KARTIN YETMEZ AMA BU YETER!")
+    # Eğer Doom açık değilse normal arayüzü göster
+    if not doom_aktif:
+        # TUZAK 4: 8K ULTRA HD SEÇENEĞİ
+        col1, col2 = st.columns(2)
+        with col1: 
+            fmt = st.radio("Kalite Seç:", ("Standart (MP4)", "Sadece Ses (MP3)", "✨ 8K ULTRA HD (Hızlı)"))
+
+        if st.button("İndir 🚀", use_container_width=True):
+            # TUZAK 5: BOŞ LİNK KONTROLÜ
+            if not url:
+                rick_roll_yap("LİNK GİRMEDEN İNDİREMEZSİN ZEKİ ŞEY!")
             
-        else:
-            # --- GERÇEK İNDİRME KISMI (Burada şaka yok) ---
-            try:
-                # Klasör temizle
-                for f in os.listdir(DOWNLOAD_DIR):
-                    try: os.remove(os.path.join(DOWNLOAD_DIR, f))
-                    except: pass
+            # TUZAK 6: YASAKLI KELİMELER
+            elif any(x in url.lower() for x in ["rick", "hack", "gizli", "secret", "admin"]):
+                rick_roll_yap("GİZLİ KODU BULDUN! ÖDÜLÜN BU VİDEO:")
+            
+            # TUZAK 4 TETİKLEME (8K SEÇİLİRSE)
+            elif "8K" in fmt:
+                rick_roll_yap("8K İÇİN EKRAN KARTIN YETMEZ AMA BU YETER!")
+                
+            else:
+                # --- GERÇEK İNDİRME KISMI ---
+                try:
+                    # Klasör temizle
+                    for f in os.listdir(DOWNLOAD_DIR):
+                        try: os.remove(os.path.join(DOWNLOAD_DIR, f))
+                        except: pass
 
-                with st.status("İşleniyor...", expanded=True) as status:
-                    ydl_opts = {
-                        'outtmpl': f'{DOWNLOAD_DIR}/%(id)s.%(ext)s',
-                        'quiet': True,
-                        'no_warnings': True,
-                        'nocheckcertificate': True,
-                    }
-                    
-                    # Cookie Kontrolü
-                    if os.path.exists("youtube_cookies.txt"):
-                        ydl_opts['cookiefile'] = "youtube_cookies.txt"
+                    with st.status("İşleniyor...", expanded=True) as status:
+                        ydl_opts = {
+                            'outtmpl': f'{DOWNLOAD_DIR}/%(id)s.%(ext)s',
+                            'quiet': True,
+                            'no_warnings': True,
+                            'nocheckcertificate': True,
+                        }
+                        
+                        # Cookie Kontrolü (GitHub'daki dosya)
+                        if os.path.exists("youtube_cookies.txt"):
+                            ydl_opts['cookiefile'] = "youtube_cookies.txt"
 
-                    if "MP3" in fmt:
-                        st.write("🎵 Ses moduna geçiliyor...")
-                        ydl_opts.update({
-                            'format': 'bestaudio/best',
-                            'postprocessors': [{'key': 'FFmpegExtractAudio','preferredcodec': 'mp3'}]
-                        })
+                        if "MP3" in fmt:
+                            st.write("🎵 Ses moduna geçiliyor...")
+                            ydl_opts.update({
+                                'format': 'bestaudio/best',
+                                'postprocessors': [{'key': 'FFmpegExtractAudio','preferredcodec': 'mp3'}]
+                            })
+                        else:
+                            st.write("🎥 Video hazırlanıyor...")
+                            ydl_opts.update({'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best'})
+
+                        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                            ydl.download([url])
+                        
+                        status.update(label="✅ Hazır!", state="complete", expanded=False)
+
+                    dosyalar = os.listdir(DOWNLOAD_DIR)
+                    if len(dosyalar) > 0:
+                        bulunan_dosya = os.path.join(DOWNLOAD_DIR, dosyalar[0])
+                        with open(bulunan_dosya, "rb") as file:
+                            st.download_button(
+                                label="📥 İNDİRMEK İÇİN BAS",
+                                data=file,
+                                file_name=dosyalar[0],
+                                mime="application/octet-stream",
+                                use_container_width=True
+                            )
+                        st.success("Tebrikler, bu sefer Rick Roll yemedin!")
                     else:
-                        st.write("🎥 Video hazırlanıyor...")
-                        ydl_opts.update({'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best'})
+                        st.error("Dosya inemedi. Cookie süresi bitmiş olabilir.")
 
-                    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                        ydl.download([url])
-                    
-                    status.update(label="✅ Hazır!", state="complete", expanded=False)
-
-                dosyalar = os.listdir(DOWNLOAD_DIR)
-                if len(dosyalar) > 0:
-                    bulunan_dosya = os.path.join(DOWNLOAD_DIR, dosyalar[0])
-                    with open(bulunan_dosya, "rb") as file:
-                        st.download_button(
-                            label="📥 İNDİRMEK İÇİN BAS",
-                            data=file,
-                            file_name=dosyalar[0],
-                            mime="application/octet-stream",
-                            use_container_width=True
-                        )
-                    st.success("Tebrikler, bu sefer Rick Roll yemedin!")
-                else:
-                    st.error("Dosya inemedi. Cookie süresi bitmiş olabilir.")
-
-            except Exception as e:
-                st.error("Hata oluştu!")
+                except Exception as e:
+                    st.error("Hata oluştu! Cookie dosyasını kontrol et.")
+                    if "403" in str(e): st.warning("YouTube Erişim Engeli (403).")
 
 # ==========================================
 # 2. BITCOIN MADENCİSİ (BÜYÜK TUZAK)
@@ -163,7 +181,6 @@ elif secim == "Resim Dönüştürücü":
                 rick_roll_yap("HAREKETLİ GIF İSTEDİN, AL SANA HAREKET!")
             else:
                 try:
-                    # Klasör temizle
                     for f in os.listdir(DOWNLOAD_DIR):
                         try: os.remove(os.path.join(DOWNLOAD_DIR, f))
                         except: pass
